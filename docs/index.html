@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Myelin / White-Matter Conduction Simulator</title>
+    <style>
+      :root {
+        --bg: #f2f6fb;
+        --ink: #1a3142;
+        --muted: #49657c;
+        --card: #ffffff;
+        --line: #d7e2ec;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: var(--ink);
+        background: linear-gradient(140deg, #edf4fb, #f8f3eb);
+      }
+      .wrap {
+        width: min(1100px, calc(100vw - 2rem));
+        margin: 1.2rem auto 2rem;
+        display: grid;
+        gap: 1rem;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 1rem;
+      }
+      h1, h2 { margin: 0 0 0.6rem; }
+      p { margin: 0.4rem 0; color: var(--muted); line-height: 1.45; }
+      .row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.8rem;
+      }
+      img {
+        width: 100%;
+        display: block;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        background: #f3f7fb;
+        border: 1px solid #dce7f2;
+        padding: 0.12rem 0.35rem;
+        border-radius: 6px;
+      }
+      a { color: #0f5f8a; }
+      @media (max-width: 840px) {
+        .row { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <section class="card">
+        <h1>Myelin / White-Matter Conduction Simulator</h1>
+        <p>
+          Educational/research simulator for saltatory conduction with modular disease patterns
+          (<code>MS</code>, <code>NMOSD</code>, <code>MOGAD</code>, <code>ADEM</code>, <code>PML</code>,
+          <code>ALD</code>, <code>KRABBE</code>, <code>MLD</code>, <code>GBS</code>, <code>CIDP</code>, <code>CMT</code>).
+        </p>
+        <p>
+          Repository: <a href="https://github.com/okok147/myelin-axon-sim">github.com/okok147/myelin-axon-sim</a>
+        </p>
+        <p>
+          Run locally: <code>python -m src.simulate --preset MS --sync --output_dir outputs</code>
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>Example Outputs (MS preset)</h2>
+        <div class="row">
+          <figure>
+            <img src="./assets/ms_traces.png" alt="MS node voltage traces" />
+          </figure>
+          <figure>
+            <img src="./assets/ms_heatmap.png" alt="MS space-time heatmap" />
+          </figure>
+          <figure>
+            <img src="./assets/ms_block_probability.png" alt="MS block probability vs severity" />
+          </figure>
+          <figure>
+            <img src="./assets/ms_synchrony.png" alt="MS synchrony phase and delay" />
+          </figure>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Disclaimer</h2>
+        <p>
+          This simulator is a mechanistic educational model and is not intended for medical diagnosis,
+          prognosis, or treatment decisions.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
