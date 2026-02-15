@@ -1,84 +1,97 @@
-# Myelin Axon Simulation
+# Myelin / White-Matter Conduction Simulator
 
-Research-grade, runnable simulation of saltatory conduction in myelinated axons.
+Educational and research-oriented simulator for saltatory conduction with
+modular demyelinating/white-matter disease signatures.
 
-## What this repo models
+## Important scope
 
-- Multi-compartment axon with repeating units:
-  - Nodes of Ranvier (active HH-style Na/K dynamics)
-  - Passive internodes with myelin-modified membrane properties (`Rm↑`, `Cm↓`)
-- Saltatory conduction with node-to-node regeneration.
-- Demyelination/remyelination perturbations and their effect on:
+This project is **not** a medical diagnostic tool. Disease presets are
+phenomenological abstractions for mechanistic exploration and education.
+
+## Features
+
+- 1D multi-compartment cable model with repeating units:
+  - active nodes of Ranvier (HH-like `INa`, `IK`, `IL`)
+  - passive internodes with myelin-dependent `Rm` and `Cm`
+  - paranodal/periaxonal seal field for leak/safety-factor effects
+- Integrity fields over space/time:
+  - `m(x,t)` myelin integrity
+  - `a(x,t)` axonal integrity
+  - `r(x,t)` node remodeling
+  - `p(x,t)` paranodal seal integrity
+  - `s(x,t)` support/homeostasis field
+- CNS and PNS presets
+- Disease modules:
+  - `MS`, `NMOSD`, `MOGAD`, `ADEM`, `PML`
+  - `ALD`, `KRABBE`, `MLD`
+  - `GBS`, `CIDP`, `CMT`
+- Metrics:
   - conduction velocity
-  - reliability/conduction block
-  - Na-current energy proxy
-- Synchrony/alignment experiment for two converging pathways:
-  - arrival-time mismatch `Δd`
-  - phase mismatch `Δφ = ω·Δd`
+  - conduction block probability
+  - Na-current energy proxy (`∫|INa| dt`)
+  - synchrony (`Δd`, `Δφ`)
+- Bundle simulation for CAP temporal dispersion (GBS/CIDP/CMT)
 
-## Installation
+## Install
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Optional high-fidelity backend:
+Dependencies are intentionally minimal:
 
-- `neuron` package (auto-detected by CLI)
+- `numpy`
+- `scipy`
+- `matplotlib`
 
-## Project layout
+## File layout
 
-- `src/axon_model.py`: pure-Python compartment model + metrics
-- `src/simulate.py`: CLI runner (single, sweep, synchrony)
-- `src/plotting.py`: publication-style figure outputs
-- `src/neuron_backend.py`: optional NEURON backend fallback
-- `tests/test_basic.py`: propagation/slowing/synchrony tests
+- `src/axon_builder.py`:
+  - compartment mesh, coupling, HH-like dynamics, conduction metrics
+- `src/disease_models.py`:
+  - disease presets as space-time field generators
+- `src/simulate.py`:
+  - CLI entry point and experiments
+- `src/plotting.py`:
+  - traces, heatmap, block probability, synchrony, CAP plots
+- `tests/test_basic.py`:
+  - propagation, demyelination, temperature, pattern-separation, synchrony tests
 
-## Run examples
-
-### 1) Baseline myelinated conduction
-
-```bash
-python -m src.simulate --mode single --condition myelinated --label baseline --output_dir outputs
-```
-
-### 2) Demyelination sweep (slowing + possible block)
-
-```bash
-python -m src.simulate --mode sweep --demyelination_factor 3 --label demyel_sweep --output_dir outputs
-```
-
-### 3) Synchrony experiment (Δd, Δφ at 10 Hz/40 Hz and custom frequency)
+## CLI
 
 ```bash
-python -m src.simulate --mode synchrony --demyelination_factor 1.2 --freq_hz_for_phase 10 --label synchrony --output_dir outputs
+python -m src.simulate \
+  --preset {MS,NMOSD,MOGAD,ADEM,PML,ALD,KRABBE,MLD,GBS,CIDP,CMT} \
+  --axon_type {CNS,PNS} \
+  --n_nodes 21 --internode_length_um 900 --node_length_um 1 --diameter_um 8 \
+  --temp_C 37 --demyelination_severity 0.7 --lesion_count 4 --lesion_len_um 700 \
+  --tstop_ms 8 --dt_ms 0.002 --seed 7 --sync
 ```
-
-### Optional remyelination example
-
-```bash
-python -m src.simulate --mode single --condition remyelinated --demyelination_factor 2 --remyelination_fraction 0.6 --label remyelinated --output_dir outputs
-```
-
-## CLI parameters (core)
-
-- `--n_nodes`, `--internode_length_um`, `--node_length_um`, `--diameter_um`
-- `--rm_myelin`, `--cm_myelin`, `--rm_node`, `--cm_node`, `--ra`
-- `--demyelination_factor`, `--freq_hz_for_phase`, `--dt`, `--tstop_ms`
-
-Useful extras: `--mode`, `--condition`, `--backend`, `--internode_segments`, `--solver`.
 
 Notes:
 
-- Internal units are SI; CLI accepts common neuroscience units (`um`, `ms`, `mV`).
-- Default solver is `solve_ivp` (`BDF`) for robustness.
-- `--solver rk4` is available; use sufficiently small `--dt`.
+- Use `--sync` to run two-pathway arrival/phase alignment analysis.
+- Outputs (plots + summary JSON) are written to `--output_dir`.
 
-## NEURON backend behavior
+## Example commands
 
-- `--backend auto` (default): use NEURON if installed, otherwise pure Python.
-- `--backend python`: force pure-Python model.
-- `--backend neuron`: force NEURON (errors if not installed).
+### MS baseline + block-probability + heatmaps/traces
+
+```bash
+python -m src.simulate --preset MS --axon_type CNS --demyelination_severity 0.7 --temp_C 37 --label ms_demo --output_dir outputs
+```
+
+### MS synchrony (10 Hz + 40 Hz + user frequency)
+
+```bash
+python -m src.simulate --preset MS --axon_type CNS --demyelination_severity 0.7 --sync --freq_hz 20 --label ms_sync --output_dir outputs
+```
+
+### GBS CAP dispersion bundle
+
+```bash
+python -m src.simulate --preset GBS --axon_type PNS --demyelination_severity 0.8 --label gbs_bundle --output_dir outputs
+```
 
 ## Tests
 
@@ -86,34 +99,32 @@ Notes:
 python -m unittest tests/test_basic.py
 ```
 
-Covers:
+The suite checks:
 
-- AP propagation across multiple nodes
-- velocity reduction under demyelination
-- monotonic increase in delay mismatch with worsening myelin
+- baseline propagation across nodes
+- demyelination-driven slowing and increased block probability
+- Uhthoff-like MS temperature sensitivity
+- CIDP/GBS segmental block/dispersion distinction vs uniform CMT slowing
+- monotonic synchrony changes (`Δd`, `Δφ`) with severity
+
+## Assumptions and limitations
+
+- SI units are used internally; CLI uses neuroscience-friendly units.
+- Disease evolution is represented through parameterized fields, not patient-specific pathology.
+- Channel remodeling and lesion dynamics are simplified abstractions.
+- No branching, extracellular fields, ephaptic coupling, or full glial network model.
 
 ## Mechanistic provenance (paper-backed)
 
-- Hodgkin & Huxley 1952 (active spike mechanism)
+- Hodgkin & Huxley 1952 (action potential dynamics)
   - DOI: `10.1113/jphysiol.1952.sp004764`
-- McIntyre, Richardson, Grill 2002; Richardson et al. 2000 (myelinated axon modeling/MRG context)
+- McIntyre, Richardson, Grill 2002 (myelinated axon modeling context)
   - DOI: `10.1152/jn.00353.2001`
-  - DOI: `10.1007/BF02345014`
-- Waxman & Brill 1978 (demyelination and conduction slowing/block)
+- Waxman & Brill 1978 (demyelination, slowing/block)
   - DOI: `10.1136/jnnp.41.5.408`
 - Hartline & Colman 2007 (myelin and conduction speed)
   - DOI: `10.1016/j.cub.2006.11.042`
-- Salami et al. 2003; Seidl 2014; Pajevic et al. 2014 (delay alignment/synchrony role of myelin)
+- Salami et al. 2003; Seidl 2014; Pajevic et al. 2014 (delay tuning/synchrony)
   - DOI: `10.1073/pnas.0937380100`
   - DOI: `10.1016/j.neuroscience.2013.06.047`
   - DOI: `10.3389/fncel.2014.00155`
-- Alle et al. 2009; Harris & Attwell 2012 (Na-entry/energetic interpretation)
-  - DOI: `10.1126/science.1174331`
-  - DOI: `10.1523/JNEUROSCI.3430-11.2012`
-
-## Limitations
-
-- Not a full molecularly detailed nodal/paranodal model.
-- Geometry is a regular linear chain (no branching, no extracellular field model).
-- NEURON path is MRG-inspired and intended for cross-checking, not a complete
-  finite-impedance double-cable reconstruction of all published variants.
