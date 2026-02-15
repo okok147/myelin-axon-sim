@@ -3,103 +3,415 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Myelin / White-Matter Conduction Simulator</title>
+    <title>Myelin Conduction Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
-        --bg: #f2f6fb;
-        --ink: #1a3142;
-        --muted: #49657c;
-        --card: #ffffff;
-        --line: #d7e2ec;
+        --bg: #eef4f6;
+        --bg-2: #f9f5ee;
+        --panel: #ffffff;
+        --ink: #13202a;
+        --subtle: #486171;
+        --line: #cedbe4;
+        --accent: #0f7a75;
+        --accent-2: #d66b2c;
+        --shadow: 0 20px 38px -24px rgba(12, 26, 38, 0.45);
       }
-      * { box-sizing: border-box; }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
       body {
         margin: 0;
-        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        color: var(--ink);
-        background: linear-gradient(140deg, #edf4fb, #f8f3eb);
+        min-height: 100%;
       }
+
+      body {
+        font-family: "Space Grotesk", "Avenir Next", "Trebuchet MS", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 15% 10%, rgba(15, 122, 117, 0.11), transparent 35%),
+          radial-gradient(circle at 85% 0%, rgba(214, 107, 44, 0.14), transparent 42%),
+          linear-gradient(135deg, var(--bg), var(--bg-2));
+      }
+
       .wrap {
-        width: min(1100px, calc(100vw - 2rem));
-        margin: 1.2rem auto 2rem;
+        width: min(1240px, calc(100vw - 2rem));
+        margin: 1rem auto 2rem;
         display: grid;
         gap: 1rem;
       }
-      .card {
-        background: var(--card);
+
+      .panel {
+        background: var(--panel);
         border: 1px solid var(--line);
-        border-radius: 14px;
+        border-radius: 18px;
         padding: 1rem;
+        box-shadow: var(--shadow);
+        animation: rise 0.5s ease both;
       }
-      h1, h2 { margin: 0 0 0.6rem; }
-      p { margin: 0.4rem 0; color: var(--muted); line-height: 1.45; }
-      .row {
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-family: "Source Serif 4", Georgia, serif;
+        font-size: clamp(1.8rem, 3.8vw, 2.8rem);
+      }
+
+      .hero p {
+        margin: 0.55rem 0 0;
+        max-width: 84ch;
+        color: var(--subtle);
+        line-height: 1.5;
+      }
+
+      .grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.8rem;
+        gap: 1rem;
+        grid-template-columns: 320px minmax(0, 1fr);
       }
-      img {
+
+      .controls {
+        display: grid;
+        gap: 0.7rem;
+      }
+
+      .control {
+        display: grid;
+        gap: 0.25rem;
+      }
+
+      label {
+        font-size: 0.88rem;
+        letter-spacing: 0.02em;
+        color: var(--subtle);
+      }
+
+      select,
+      input[type="range"] {
         width: 100%;
-        display: block;
+      }
+
+      select {
+        appearance: none;
         border: 1px solid var(--line);
         border-radius: 10px;
+        padding: 0.6rem;
+        font: inherit;
+        background: linear-gradient(180deg, #fdfefe, #f1f6f9);
+        color: var(--ink);
+      }
+
+      input[type="range"] {
+        accent-color: var(--accent);
+      }
+
+      .value {
+        font-size: 0.82rem;
+        color: var(--subtle);
+      }
+
+      .btn-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.2rem;
+      }
+
+      button {
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: 0.56rem 0.7rem;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      button.primary {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      button.secondary {
+        background: #edf4f8;
+        border-color: #d3e0e9;
+        color: #203646;
+      }
+
+      button.warn {
+        background: #fff4ef;
+        border-color: #f2d2c2;
+        color: #8e4a24;
+      }
+
+      .viz {
+        display: grid;
+        gap: 0.7rem;
+      }
+
+      .canvas-wrap {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 0.4rem;
+        background: linear-gradient(180deg, #f9fcfd, #f2f7fa);
+      }
+
+      canvas {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 11px;
         background: #fff;
       }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.65rem;
+      }
+
+      .stat {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 0.7rem;
+        background: #fbfdff;
+      }
+
+      .stat .k {
+        font-size: 0.73rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--subtle);
+      }
+
+      .stat .v {
+        margin-top: 0.24rem;
+        font-weight: 700;
+        font-size: 1.04rem;
+      }
+
+      .small {
+        margin: 0;
+        color: var(--subtle);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+
+      .row {
+        display: grid;
+        gap: 0.7rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .ref-list {
+        margin: 0.4rem 0 0;
+        padding-left: 1rem;
+        color: var(--subtle);
+        line-height: 1.5;
+      }
+
+      .ref-list a {
+        color: #0c5e89;
+      }
+
+      figure {
+        margin: 0;
+      }
+
+      img {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        display: block;
+      }
+
       code {
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         background: #f3f7fb;
         border: 1px solid #dce7f2;
-        padding: 0.12rem 0.35rem;
+        padding: 0.12rem 0.32rem;
         border-radius: 6px;
       }
-      a { color: #0f5f8a; }
-      @media (max-width: 840px) {
-        .row { grid-template-columns: 1fr; }
+
+      .badge {
+        display: inline-block;
+        margin-left: 0.35rem;
+        padding: 0.12rem 0.45rem;
+        border-radius: 999px;
+        background: #e8f4f3;
+        color: #0e5f59;
+        font-size: 0.74rem;
+      }
+
+      @media (max-width: 980px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .row {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
     <main class="wrap">
-      <section class="card">
-        <h1>Myelin / White-Matter Conduction Simulator</h1>
+      <section class="panel hero">
+        <h1>Myelin Conduction Lab <span class="badge">Live Animation</span></h1>
         <p>
-          Educational/research simulator for saltatory conduction with modular disease patterns
-          (<code>MS</code>, <code>NMOSD</code>, <code>MOGAD</code>, <code>ADEM</code>, <code>PML</code>,
-          <code>ALD</code>, <code>KRABBE</code>, <code>MLD</code>, <code>GBS</code>, <code>CIDP</code>, <code>CMT</code>).
+          Real-time browser simulation of saltatory conduction with active nodes of Ranvier,
+          passive myelinated internodes, demyelination effects, pathway synchrony, and disease-style
+          parameter presets. This is a mechanistic educational model, not a clinical diagnostic system.
         </p>
         <p>
-          Repository: <a href="https://github.com/okok147/myelin-axon-sim">github.com/okok147/myelin-axon-sim</a>
-        </p>
-        <p>
-          Run locally: <code>python -m src.simulate --preset MS --sync --output_dir outputs</code>
+          Repo: <a href="https://github.com/okok147/myelin-axon-sim">github.com/okok147/myelin-axon-sim</a>
         </p>
       </section>
 
-      <section class="card">
-        <h2>Example Outputs (MS preset)</h2>
+      <section class="panel grid">
+        <aside class="controls">
+          <div class="control">
+            <label for="preset">Preset</label>
+            <select id="preset">
+              <option value="HEALTHY">Healthy myelinated baseline</option>
+              <option value="MS">MS patchy demyelination</option>
+              <option value="GBS">GBS segmental demyelination (PNS)</option>
+              <option value="CIDP">CIDP chronic multifocal demyelination (PNS)</option>
+              <option value="CMT">CMT uniform slow conduction (PNS)</option>
+              <option value="ADEM">ADEM acute widespread demyelination</option>
+            </select>
+          </div>
+
+          <div class="control">
+            <label for="practice">Practice scenario</label>
+            <select id="practice">
+              <option value="progressive">Progressive practice (adaptive growth)</option>
+              <option value="correct">Correct practice (stable gains)</option>
+              <option value="plateau">Repetitive without growth (plateau)</option>
+              <option value="wrong">Wrong practice (degradation)</option>
+            </select>
+            <div class="value" id="practiceValue">Adaptive training rate: +3% myelin integrity per run</div>
+          </div>
+
+          <div class="control">
+            <label for="severity">Demyelination severity</label>
+            <input id="severity" type="range" min="0" max="100" value="25" step="1" />
+            <div class="value" id="severityValue">25%</div>
+          </div>
+
+          <div class="control">
+            <label for="temperature">Temperature</label>
+            <input id="temperature" type="range" min="34" max="41" value="37" step="0.1" />
+            <div class="value" id="temperatureValue">37.0 deg C</div>
+          </div>
+
+          <div class="control">
+            <label for="phaseFreq">Synchrony frequency</label>
+            <input id="phaseFreq" type="range" min="4" max="80" value="40" step="1" />
+            <div class="value" id="phaseFreqValue">40 Hz</div>
+          </div>
+
+          <div class="btn-row">
+            <button id="runBtn" class="primary">Run</button>
+            <button id="pauseBtn" class="secondary">Pause</button>
+            <button id="resetBtn" class="warn">Reset</button>
+          </div>
+
+          <p class="small">
+            Controls are fully wired end-to-end: each change updates simulation parameters,
+            recomputes propagation, and updates animation + metrics.
+          </p>
+        </aside>
+
+        <section class="viz">
+          <div class="canvas-wrap">
+            <canvas id="axonCanvas" width="900" height="250"></canvas>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="heatCanvas" width="900" height="220"></canvas>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="syncCanvas" width="900" height="140"></canvas>
+          </div>
+          <div class="stats">
+            <article class="stat">
+              <div class="k">Velocity</div>
+              <div class="v" id="velocityMetric">--</div>
+            </article>
+            <article class="stat">
+              <div class="k">Block Probability</div>
+              <div class="v" id="blockMetric">--</div>
+            </article>
+            <article class="stat">
+              <div class="k">Delay delta</div>
+              <div class="v" id="delayMetric">--</div>
+            </article>
+            <article class="stat">
+              <div class="k">Phase delta</div>
+              <div class="v" id="phaseMetric">--</div>
+            </article>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel">
+        <h2>Reference Python Outputs</h2>
+        <p class="small">
+          These figures are generated from the Python model in this repository. The interactive animation above is
+          a browser implementation aligned to the same saltatory-conduction principles.
+        </p>
         <div class="row">
-          <figure>
-            <img src="./assets/ms_traces.png" alt="MS node voltage traces" />
-          </figure>
-          <figure>
-            <img src="./assets/ms_heatmap.png" alt="MS space-time heatmap" />
-          </figure>
-          <figure>
-            <img src="./assets/ms_block_probability.png" alt="MS block probability vs severity" />
-          </figure>
-          <figure>
-            <img src="./assets/ms_synchrony.png" alt="MS synchrony phase and delay" />
-          </figure>
+          <figure><img src="./assets/ms_traces.png" alt="MS node voltage traces" /></figure>
+          <figure><img src="./assets/ms_heatmap.png" alt="MS space-time heatmap" /></figure>
+          <figure><img src="./assets/ms_block_probability.png" alt="MS block probability vs severity" /></figure>
+          <figure><img src="./assets/ms_synchrony.png" alt="MS synchrony phase and delay" /></figure>
         </div>
       </section>
 
-      <section class="card">
+      <section class="panel">
+        <h2>Study-backed Mechanics</h2>
+        <ul class="ref-list">
+          <li>Hodgkin AL, Huxley AF (1952), action-potential formalism. <a href="https://doi.org/10.1113/jphysiol.1952.sp004764">DOI</a></li>
+          <li>McIntyre CC, Richardson AG, Grill WM (2002), myelinated axon modeling context. <a href="https://doi.org/10.1152/jn.00353.2001">DOI</a></li>
+          <li>Waxman SG, Brill MH (1978), demyelination slowing and conduction block. <a href="https://doi.org/10.1136/jnnp.41.5.408">DOI</a></li>
+          <li>Hartline DK, Colman DR (2007), myelin effects on velocity/energy. <a href="https://doi.org/10.1016/j.cub.2006.11.042">DOI</a></li>
+          <li>Salami M et al. (2003), myelination for timing alignment. <a href="https://doi.org/10.1073/pnas.0937380100">DOI</a></li>
+          <li>Seidl AH (2014), regulation of conduction delay. <a href="https://doi.org/10.1016/j.neuroscience.2013.06.047">DOI</a></li>
+          <li>Pajevic S et al. (2014), myelin plasticity and synchrony. <a href="https://doi.org/10.3389/fncel.2014.00155">DOI</a></li>
+        </ul>
+      </section>
+
+      <section class="panel">
         <h2>Disclaimer</h2>
-        <p>
-          This simulator is a mechanistic educational model and is not intended for medical diagnosis,
-          prognosis, or treatment decisions.
+        <p class="small">
+          Educational/research simulation only. Not intended for medical diagnosis, prognosis,
+          treatment recommendation, or patient-level decision-making.
         </p>
+        <p class="small">For reproducible command-line experiments, run <code>python -m src.simulate --preset MS --sync</code>.</p>
       </section>
     </main>
+
+    <script src="./app.js"></script>
   </body>
 </html>

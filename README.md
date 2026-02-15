@@ -31,6 +31,11 @@ phenomenological abstractions for mechanistic exploration and education.
   - Na-current energy proxy (`∫|INa| dt`)
   - synchrony (`Δd`, `Δφ`)
 - Bundle simulation for CAP temporal dispersion (GBS/CIDP/CMT)
+- GitHub Pages web app with live in-browser animation and interactive controls
+
+## Live website
+
+- Interactive animation: `https://okok147.github.io/myelin-axon-sim/`
 
 ## Install
 
